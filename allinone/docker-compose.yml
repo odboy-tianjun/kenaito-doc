@@ -1,0 +1,50 @@
+version: '3'
+services:
+  minio:
+    image: registry.cn-shanghai.aliyuncs.com/odboy/ops:minio-2024.05.28
+    container_name: minio
+    restart: unless-stopped
+    volumes:
+      - "./minio/data:/data"
+      - "./minio/bin:/minio"
+      - "./minio/config:/root/.minio"
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+      MINIO_ACCESS_KEY: "minioadmin"
+      MINIO_SECRET_KEY: "minioadmin"
+    command: server /data  --console-address ":9001"
+    ports:
+      - "19000:9000" # 文件上传&预览端口
+      - "19001:9001" # 控制台访问端口
+  mysql:
+    image: registry.cn-shanghai.aliyuncs.com/odboy/ops:mysql-8.0
+    container_name: mysql8
+    restart: unless-stopped
+    volumes:
+      - "./mysql/my.cnf:/etc/mysql/my.cnf"
+      - "./mysql/data:/var/lib/mysql"
+      - "./mysql/mysql-files:/var/lib/mysql-files"
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+    privileged: true
+    user: root
+    ports:
+      - "13306:3306"
+  redis:
+    image: registry.cn-shanghai.aliyuncs.com/odboy/ops:redis-7.0.5
+    container_name: redis7
+    restart: unless-stopped
+    command: redis-server /etc/redis/redis.conf --requirepass 123456 --appendonly no
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    volumes:
+      - "./redis/data:/data"
+      - "./redis/config/redis.conf:/etc/redis/redis.conf"
+    ports:
+      - "16379:6379"
